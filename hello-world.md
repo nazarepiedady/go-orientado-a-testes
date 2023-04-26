@@ -263,13 +263,26 @@ Here we are introducing another tool in our testing arsenal, subtests. Sometimes
 
 A benefit of this approach is you can set up shared code that can be used in the other tests.
 
-There is repeated code when we check if the message is what we expect.
+While we have a failing test, let's fix the code, using an `if`.
+
+```go
+const englishHelloPrefix = "Hello, "
+
+func Hello(name string) string {
+	if name == "" {
+		name = "World"
+	}
+	return englishHelloPrefix + name
+}
+```
+
+If we run our tests we should see it satisfies the new requirement and we haven't accidentally broken the other functionality.
+
+It is important that your tests _are clear specifications_ of what the code needs to do. But there is repeated code when we check if the message is what we expect.
 
 Refactoring is not _just_ for the production code!
 
-It is important that your tests _are clear specifications_ of what the code needs to do.
-
-We can and should refactor our tests.
+Now that the tests are passing, we can and should refactor our tests.
 
 ```go
 func TestHello(t *testing.T) {
@@ -303,25 +316,9 @@ For helper functions, it's a good idea to accept a `testing.TB` which is an inte
 
 `t.Helper()` is needed to tell the test suite that this method is a helper. By doing this when it fails the line number reported will be in our _function call_ rather than inside our test helper. This will help other developers track down problems easier. If you still don't understand, comment it out, make a test fail and observe the test output. Comments in Go are a great way to add additional information to your code, or in this case, a quick way to tell the compiler to ignore a line. You can comment out the `t.Helper()` code by adding two forward slashes `//` at the beginning of the line. You should see that line turn grey or change to another color than the rest of your code to indicate it's now commented out.
 
-Now that we have a well-written failing test, let's fix the code, using an `if`.
-
-```go
-const englishHelloPrefix = "Hello, "
-
-func Hello(name string) string {
-	if name == "" {
-		name = "World"
-	}
-	return englishHelloPrefix + name
-}
-```
-
-If we run our tests we should see it satisfies the new requirement and we haven't accidentally broken the other functionality.
-
 ### Back to source control
 
-Now we are happy with the code I would amend the previous commit so we only
-check in the lovely version of our code with its test.
+Now we are happy with the code I would amend the previous commit so we only check in the lovely version of our code with its test.
 
 ### Discipline
 
@@ -412,9 +409,9 @@ The tests should now pass.
 Now it is time to _refactor_. You should see some problems in the code, "magic" strings, some of which are repeated. Try and refactor it yourself, with every change make sure you re-run the tests to make sure your refactoring isn't breaking anything.
 
 ```go
-const spanish = "Spanish"
-const englishHelloPrefix = "Hello, "
-const spanishHelloPrefix = "Hola, "
+    const spanish = "Spanish"
+    const englishHelloPrefix = "Hello, "
+    const spanishHelloPrefix = "Hola, "
 
 func Hello(name string, language string) string {
 	if name == "" {
@@ -465,9 +462,9 @@ func Hello(name string, language string) string {
 	prefix := englishHelloPrefix
 
 	switch language {
-	case french:
+	case "french":
 		prefix = frenchHelloPrefix
-	case spanish:
+	case "spanish":
 		prefix = spanishHelloPrefix
 	}
 
@@ -482,6 +479,16 @@ Write a test to now include a greeting in the language of your choice and you sh
 You could argue that maybe our function is getting a little big. The simplest refactor for this would be to extract out some functionality into another function.
 
 ```go
+
+const (
+	french  = "French"
+	spanish = "Spanish"
+    
+    englishHelloPrefix = "Hello, "
+    spanishHelloPrefix = "Hola, "
+    frenchHelloPrefix = "Bonjour, "
+)
+
 func Hello(name string, language string) string {
 	if name == "" {
 		name = "World"
@@ -512,6 +519,7 @@ A few new concepts:
   * This will display in the Go Doc for your function so it can make the intent of your code clearer.
 * `default` in the switch case will be branched to if none of the other `case` statements match.
 * The function name starts with a lowercase letter. In Go, public functions start with a capital letter and private ones start with a lowercase. We don't want the internals of our algorithm to be exposed to the world, so we made this function private.
+* Also, we can group constants in a block instead of declaring them each on their own line. It's a good idea to use a line between sets of related constants for readability.
 
 ## Wrapping up
 
